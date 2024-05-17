@@ -37,7 +37,6 @@ def bulk_import(request):
                 phone_number=row['운영기관연락처'],
                 etc=row['선정방법구분'],
                 content_link=row['홈페이지 주소'],
-                tags=row['태그'],
-                search_count=row['검색 수']
+                # tags=row['태그']
             )
         return
