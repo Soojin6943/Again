@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ tag.name }}_list</title>
+</head>
+
+<body>
+    <h1>{{ tag.name }}_list (로그인된 상태)</h1>
+
+    <hr>
+
+    {% for content in page_contents %}
+        <div>
+            <a href="{% url 'content' content.id%}">{{ content.title }}</a>
+        </div>
+    {% endfor %}
+    
+    <hr>
+    {% if page_contents.has_other_pages %}
+    <div>
+        {% if page_contents.has_previous %}
+            <a href="?tag={{ tag.name }}&page=1">&laquo; 처음</a>
+            <a href="?tag={{ tag.name }}&page={{ page_contents.previous_page_number }}">이전</a>
+        {% endif %}
+        <span>페이지 {{ page_contents.number }} / {{ page_contents.paginator.num_pages }}</span>
+        {% if page_contents.has_next %}
+            <a href="?tag={{ tag.name }}&page={{ page_contents.next_page_number }}">다음</a>
+            <a href="?tag={{ tag.name }}&page={{ page_contents.paginator.num_pages }}">마지막 &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+    <hr>
+
+    <div>{{ user.username }}(ID: {{ user.id }})</div>
+    <a href="{% url 'index' %}">홈으로</a>
+    <a href="{% url 'content_list'%}">목록으로</a> 
+    <a href="{% url 'logout'%}">로그아웃</a>
+
+</body>
+
+</html>
