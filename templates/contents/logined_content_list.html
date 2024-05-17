@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content_list</title>
+</head>
+
+<body>
+    <h1>Content_list (로그인된 상태)</h1>
+
+    {% for tag in tags %}
+        <span>
+            <a href="{% url 'tags_list' %}?tag={{ tag.name }}">#{{ tag.name }}</a>
+        </span>
+    {% endfor %}
+
+    <hr>
+
+    <form method="GET">
+        <input type="text" name='q' {% if search_query %}value="{{ search_query }}{% endif %}">
+        <button type="submit">검색</button>
+    </form>
+    {% for content in contents %}
+        <div>
+            <a href="{% url 'content' content.id %}">{{ content.title }}</a>
+        </div>
+    {% endfor %}
+    
+    <hr>
+
+    {% for content in page_contents %}
+        <div>
+            <a href="{% url 'content' content.id %}">{{ content.title }}</a>
+        </div>
+    {% endfor %}
+    {% if page_contents.has_other_pages %}
+        <div>
+            {% if page_contents.has_previous %}
+                <a href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}">&laquo; 처음</a>
+                <a href="?page={{ page_contents.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">이전</a>
+            {% endif %}
+            <span>페이지 {{page_contents.number }} / {{ page_contents.paginator.num_pages }}</span>
+            {% if page_contents.has_next %}
+                <a href="?page={{ page_contents.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">다음</a>
+                <a href="?page={{ page_contents.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}">마지막 &raquo;</a>
+            {% endif %}
+        </div>
+    {% endif %}
+    
+    <hr>
+
+    <div>{{ user.username }}(ID: {{ user.id }})</div>
+    <a href="{% url 'index' %}">홈으로</a>
+    <a href="{% url 'my_page'%}">마이페이지</a>
+    <a href="{% url 'logout'%}">로그아웃</a>
+</body>
+
+</html>

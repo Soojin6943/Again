@@ -1,0 +1,44 @@
+<!--<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+
+<body>
+    <h1>Login</h1>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">로그인</button>
+    </form>
+    <a href="{% url 'signup'%}">회원가입</a>
+    <a href="{% url 'index' %}">홈으로</a>
+</body>
+
+</html>-->
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+
+<body>
+    <h1>Login</h1>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.username.label_tag }}
+        {{ form.username }}
+        <br>
+        {{ form.password.label_tag }}
+        {{ form.password }}
+        <button type="submit">로그인</button>
+    </form>
+    <a href="{% url 'signup'%}">회원가입</a>
+    <a href="{% url 'index' %}">홈으로</a>
+</body>
+
+</html>
