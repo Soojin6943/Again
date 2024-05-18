@@ -14,9 +14,9 @@ def detail(request, category):
     return render(request, 'map.html', context)
 
 def bulk_import(request):
-    CVS_PATH = 'static/test.csv'
+    CSV_PATH = 'static/test3.csv'
 
-    with open(CVS_PATH, newline='', encoding='utf-8') as csvfile:
+    with open(CSV_PATH, newline='', encoding='utf-8') as csvfile:
         data_reader = csv.DictReader(csvfile)
         for row in data_reader:
             Content.objects.create(
