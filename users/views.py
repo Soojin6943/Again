@@ -52,7 +52,7 @@ def my_page(request):
     user = request.user
     favorite_contents = FavoriteContent.objects.filter(user=user)
 
-    paginator = Paginator(favorite_contents, 2)
+    paginator = Paginator(favorite_contents, 10)
     page_number = request.GET.get("page")
     page_contents = paginator.get_page(page_number)
 

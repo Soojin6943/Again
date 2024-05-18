@@ -14,7 +14,7 @@ def content_list(request):
         contents = contents.filter(title__icontains=search_query)
     # 페이징
 
-    paginator = Paginator(contents, 2)
+    paginator = Paginator(contents, 10)
     page_number = request.GET.get("page")
     page_contents = paginator.get_page(page_number)
 
@@ -43,7 +43,7 @@ def tags_list(request):
     tag = get_object_or_404(HashTag, name=tag_name)
     contents_with_tag = tag.content_set.all()
 
-    paginator = Paginator(contents_with_tag, 2)
+    paginator = Paginator(contents_with_tag, 10)
     page_number = request.GET.get("page")
     page_contents = paginator.get_page(page_number)
 
