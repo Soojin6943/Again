@@ -16,7 +16,16 @@
     {% endfor %}
 
     <hr>
+    <h2>조회수 상위 10 콘텐츠</h2>
 
+    {% for content in top_contents %}
+        <div>
+            <a href="{% url 'content' content.id %}">{{ content.title }}</a>
+        </div>
+    {% endfor %}
+
+    <hr>
+    <h2>검색</h2>
     <form method="GET">
         <input type="text" name='q' {% if search_query %} value="{{ search_query }}"{% endif %}>
         <button type="submit">검색</button>
@@ -28,7 +37,7 @@
     {% endfor %}
     
     <hr>
-
+    <h2>콘텐츠 목록</h2>
     {% for content in page_contents %}
         <div>
             <a href="{% url 'content' content.id %}">{{ content.title }}</a>

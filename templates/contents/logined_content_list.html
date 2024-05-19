@@ -18,6 +18,44 @@
 
     <hr>
 
+    <h2>추천 콘텐츠</h2>
+    {% if similar_page_contents %}
+        {% for content in similar_page_contents %}
+            <div>
+                <a href="{% url 'content' content.id %}">{{ content.title }}</a>
+            </div>
+        {% endfor %}
+
+        <div>
+            {% if similar_page_contents.has_other_pages %}
+                <div>
+                    {% if similar_page_contents.has_previous %}
+                        <a href="?similar_page=1{% if search_query %}&q={{ search_query }}{% endif %}">&laquo; 처음</a>
+                        <a href="?similar_page={{ similar_page_contents.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">이전</a>
+                    {% endif %}
+                    <span>페이지 {{similar_page_contents.number }} / {{ similar_page_contents.paginator.num_pages }}</span>
+                    {% if similar_page_contents.has_next %}
+                        <a href="?similar_page={{ similar_page_contents.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">다음</a>
+                        <a href="?similar_page={{ similar_page_contents.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}">마지막 &raquo;</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <p>추천 콘텐츠가 없습니다.</p>
+    {% endif %}
+
+    <hr>
+    <h2>조회수 상위 10 콘텐츠</h2>
+
+    {% for content in top_contents %}
+        <div>
+            <a href="{% url 'content' content.id %}">{{ content.title }}</a>
+        </div>
+    {% endfor %}
+
+    <hr>
+    <h2>검색</h2>
     <form method="GET">
         <input type="text" name='q' {% if search_query %}value="{{ search_query }}{% endif %}">
         <button type="submit">검색</button>
@@ -29,7 +67,7 @@
     {% endfor %}
     
     <hr>
-
+    <h2>콘텐츠 목록</h2>
     {% for content in page_contents %}
         <div>
             <a href="{% url 'content' content.id %}">{{ content.title }}</a>

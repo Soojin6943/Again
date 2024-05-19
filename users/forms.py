@@ -11,7 +11,7 @@ class LoginForm(forms.Form):
     )
     password = forms.CharField(
         min_length=5,
-        widget=forms.TextInput(attrs={"placeholder": "5자이상"}),
+        widget=forms.PasswordInput(attrs={"placeholder": "5자이상"}),
         label="비밀번호",
     )
 
