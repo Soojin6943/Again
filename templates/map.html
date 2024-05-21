@@ -153,6 +153,10 @@
         z-index: var(--z-fixed);
     }
 
+    .search {
+        margin-left: 500px;
+    }
+
     /* NAV */
     .nav {
         height: 100%;
@@ -275,6 +279,9 @@
         var zoomControl = new kakao.maps.ZoomControl();
         map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
 
+        // 최대 확대 레벨 설정
+        map.setMaxLevel(10);
+
         // 위치 검색을 위한 개체 생성
         var geocoder = new kakao.maps.services.Geocoder();
 
@@ -371,6 +378,11 @@
         }
     </script>
 
+    <form method="GET" class='search'>
+        <input type="text" name='q' {% if search_query %} value="{{ search_query }}"{% endif %}>
+        <button type="submit">검색</button>
+    </form>
+
     {% comment %} 이거슨 사이드바 {% endcomment %}
 
     <div class="l-navbar" id="navbar">
@@ -385,6 +397,7 @@
                         <ion-icon name="home-outline" class="nav__icon"></ion-icon>
                         <span class="nav_name">HOME</span>
                     </a>
+                    
                     <a href="#" class="nav__link">
                         <ion-icon name="chatbubbles-outline" class="nav__icon"></ion-icon>
                         <span class="nav_name">Messenger</span>
