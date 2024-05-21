@@ -268,7 +268,7 @@
         var container = document.getElementById('map');  //지도를 표시 할 div
 
         var options = {
-            center: new kakao.maps.LatLng(33.450701, 126.570667),  // 지도의 중심 좌표
+            center: new kakao.maps.LatLng(33.450701, 126.570667),  // 지도의 중심 좌표 (위도, 경도)
             level: 6  // 지도 확대 레벨
         };
 
@@ -280,7 +280,7 @@
         map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
 
         // 최대 확대 레벨 설정
-        map.setMaxLevel(10);
+        map.setMaxLevel(13);
 
         // 위치 검색을 위한 개체 생성
         var geocoder = new kakao.maps.services.Geocoder();
@@ -300,6 +300,7 @@
             })
         {% endfor %}
 
+
         // 마커랑 인포윈도우 생성
         positions.forEach(function (position) {
             geocoder.addressSearch(position.address, function(result, status) {
@@ -307,7 +308,7 @@
                 // 위치 검색 가능할 경우
                 if(status === kakao.maps.services.Status.OK) {
                     var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
-
+                    
                     // 마커 생성
                     var marker = new kakao.maps.Marker({
                         map: map, // 마커 표시할 지도
@@ -315,46 +316,36 @@
                         clickable: true
                     });
 
-                    // 커스텀 오버레이
-                    var content = '<div class="wrap">' +
-                                    '<div class="info">' +
-                                        '<div class="title">' + 
-                                            position.title +
-                                            '<div class="close" onclick="closeOverlay()" title="닫기"></div>' +
-                                        '</div>' +
-                                        '<div class="body">' +
-                                            '<div class="desc">' +
-                                                '<div class="ellipsis">' + 
-                                                    position.content + '</br>' +
-                                                    "운영기관 : " + position.organization + '</br>' +
-                                                    "대상 : " + position.people + '</br>' +
-                                                    {% comment %} "교육 장소 : " + position.address + '</br>' + {% endcomment %}
-                                                    '<a href="'+position.home+'">' + "홈페이지 이동하기" + '</a>'
-                                                '</div>' +
-                                            '</div>' +
-                                        '</div>' +
-                                    '</div>' +
-                                '</div>';
+                    var iwContent = '<div style="width:150px; text-align:center; padding:6px 0;">' + position.title + '</div>',
+                        iwRemoveable = true;
 
-                    var overlay = new kakao.maps.CustomOverlay({
-                        content : content,
-                        map : map,
-                        position : marker.getPosition()
+                    var infowindow = new kakao.maps.InfoWindow({
+                        content : iwContent,
+                        removable : iwRemoveable
                     });
-
-                    overlay.setMap(null);
                     
-                    kakao.maps.event.addListener(marker, 'click', function() {
-                        overlay.setMap(map);
-                        map.setCenter(coords);
-                    });
+                    kakao.maps.event.addListener(marker, 'click', function() { 
+                        // coords는 클릭한애 위치
+                        infowindow.open(map, marker);
+                        map.setCenter(coords); 
 
-                    {% comment %} function closeOverlay() {
-                        overlay.setMap(null);     
-                    } {% endcomment %}
+                        // 클릭한 마커와 같은 위치를 가진 데이터 추출
+                        positions.forEach(function(position){
+                            geocoder.addressSearch(position.address, function(result, status) {
+                                if(status === kakao.maps.services.Status.OK) {
+                                    var test = new kakao.maps.LatLng(result[0].y, result[0].x);
+
+                                    if (coords.equals(test) == true) {
+                                        console.log(position.title);
+                                    }
+                                }
+                            });
+                        });
+                        
+                    });
 
                     kakao.maps.event.addListener(map, 'click', function () {
-                        overlay.setMap(null);
+                        {% comment %} overlay.setMap(null); {% endcomment %}
                     });
                 }
             });
@@ -400,7 +391,7 @@
                     
                     <a href="#" class="nav__link">
                         <ion-icon name="chatbubbles-outline" class="nav__icon"></ion-icon>
-                        <span class="nav_name">Messenger</span>
+                        <span class="nav_name">{{ position.title }}</span>
                     </a>
 
                     <div href="#" class="nav__link collapse">
