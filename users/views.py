@@ -3,6 +3,7 @@ from users.forms import LoginForm, SignupForm
 from django.contrib.auth import authenticate, login, logout
 from users.models import User, FavoriteTag, FavoriteContent
 from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required
 
 
 def login_view(request):
@@ -48,26 +49,25 @@ def signup(request):
     return render(request, "users/signup.html", context)
 
 
+@login_required
 def my_page(request):
     user = request.user
     favorite_contents = FavoriteContent.objects.filter(user=user)
 
-    paginator = Paginator(favorite_contents, 10)
+    paginator = Paginator(favorite_contents, 5)  # 페이지당 5개 항목
     page_number = request.GET.get("page")
     page_contents = paginator.get_page(page_number)
 
     context = {
-        "user": user,
-        "favorite_contents": favorite_contents,
         "page_contents": page_contents,
     }
-    if request.user.is_authenticated:
-        return render(request, "users/my_page.html", context)
-    return render(request, "users/login.html")
+    return render(request, "users/my_page.html", context)
 
 
-def remove_favorite(request, favorite_content_id):
-    if request.method == "POST":
-        favorite_content = FavoriteContent.objects.get(pk=favorite_content_id)
-        favorite_content.delete()
+@login_required
+def remove_favorite(request, favorite_id):
+    favorite_content = get_object_or_404(
+        FavoriteContent, id=favorite_id, user=request.user
+    )
+    favorite_content.delete()
     return redirect("my_page")

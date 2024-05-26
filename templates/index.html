@@ -8,11 +8,19 @@
 </head>
 
 <body>
-    <h1>Index (로그인 안된 상태)</h1>
-    <a href="{% url 'content_list'%}">콘텐츠로 찾기</a>
-    <a href="{% url 'map' %}">지역에서 찾기</a>
-    <a href="{% url 'login'%}">로그인</a>
-    <a href="{% url 'signup'%}">회원가입</a>
+    {% if request.user.is_authenticated %}
+        <h1>Index (로그인된 상태)</h1>
+        <a href="{% url 'content_list'%}">콘텐츠로 찾기</a>
+        <a href="{% url 'map' %}">지역에서 찾기</a>
+        <a href="{% url 'my_page' %}">마이페이지</a>
+        <a href="{% url 'logout' %}">로그아웃</a>
+    {% else %}
+        <h1>Index (로그인 안된 상태)</h1>
+        <a href="{% url 'content_list'%}">콘텐츠로 찾기</a>
+        <a href="{% url 'map' %}">지역에서 찾기</a>
+        <a href="{% url 'login'%}">로그인</a>
+        <a href="{% url 'signup'%}">회원가입</a>
+    {% endif %}
 </body>
 
 </html>

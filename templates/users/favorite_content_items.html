@@ -1,0 +1,22 @@
+{% for favorite_content in page_contents %}
+    <div>
+        <a href="{% url 'content' favorite_content.content.id %}">{{ favorite_content.content.title }}</a>
+        <form action="{% url 'remove_favorite' favorite_content.id %}" method="post" class="remove-favorite-form">
+            {% csrf_token %}
+            <button type="submit">삭제</button>
+        </form>
+    </div>
+{% endfor %}
+{% if page_contents.has_other_pages %}
+    <div>
+        {% if page_contents.has_previous %}
+            <a href="?page=1" class="page-link">&laquo; 처음</a>
+            <a href="?page={{ page_contents.previous_page_number }}" class="page-link">이전</a>
+        {% endif %}
+        <span>페이지 {{ page_contents.number }} / {{ page_contents.paginator.num_pages }}</span>
+        {% if page_contents.has_next %}
+            <a href="?page={{ page_contents.next_page_number }}" class="page-link">다음</a>
+            <a href="?page={{ page_contents.paginator.num_pages }}" class="page-link">마지막 &raquo;</a>
+        {% endif %}
+    </div>
+{% endif %}

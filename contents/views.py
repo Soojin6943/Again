@@ -3,6 +3,8 @@ from contents.models import Content, HashTag
 from django.core.paginator import Paginator
 from users.models import FavoriteContent
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.template.loader import render_to_string
 from difflib import SequenceMatcher
 
 
@@ -22,7 +24,7 @@ def similar_contents_by_title(content_title, all_contents):
 
 
 def content_list(request):
-    contents = Content.objects.all().order_by("title")  # 검색횟수 내림차순
+    contents = Content.objects.all().order_by("title")
     tags = HashTag.objects.all()
     search_query = request.GET.get("q")
 
@@ -62,6 +64,18 @@ def content_list(request):
     page_number = request.GET.get("page")
     page_contents = paginator.get_page(page_number)
 
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        data = {
+            "page_contents": render_to_string(
+                "contents/content_items.html", {"page_contents": page_contents}
+            ),
+            "similar_page_contents": render_to_string(
+                "contents/similar_content_items.html",
+                {"similar_page_contents": similar_page_contents},
+            ),
+        }
+        return JsonResponse(data)
+
     context = {
         "page_contents": page_contents,
         "search_query": search_query,
@@ -70,9 +84,7 @@ def content_list(request):
         "top_contents": top_contents,
     }
 
-    if not request.user.is_authenticated:
-        return render(request, "contents/content_list.html", context)
-    return render(request, "contents/logined_content_list.html", context)
+    return render(request, "contents/content_list.html", context)
 
 
 def content(request, id):
@@ -106,11 +118,8 @@ def add_favorite(request, content_id):
     user = request.user
     content = get_object_or_404(Content, pk=content_id)
 
-    # if request.user.is_authenticated:
     if FavoriteContent.objects.filter(user=user, content=content).exists():
         FavoriteContent.objects.filter(user=user, content=content).delete()
     else:
         FavoriteContent.objects.create(user=user, content=content)
     return redirect("content", id=content_id)
-    # else:
-    #     return redirect("/users/login/")

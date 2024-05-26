@@ -9,6 +9,9 @@
     {% if not request.user.is_authenticated %}
         <a href="{% url 'login'%}">로그인</a>
         <a href="{% url 'signup'%}">회원가입</a>
+    {% else %}
+        <a href="{% url 'my_page'%}">마이페이지</a>
+        <a href="{% url 'logout'%}">로그아웃</a>
     {% endif %}
     <hr>
     <h1>{{ content.title }}</h1>
@@ -42,9 +45,5 @@
 
     <a href="#" onclick="history.back(); return false;">뒤로 가기</a>
     <a href="{% url 'content_list'%}">콘텐츠 목록으로</a>
-    {% if request.user.is_authenticated %}
-        <a href="{% url 'my_page'%}">마이페이지</a>
-        <a href="{% url 'logout'%}">로그아웃</a>
-    {% endif %}
 </body>
 </html>

@@ -9,43 +9,15 @@
 
 <body>
     <h1>마이페이지</h1>
-
-    <!--<h2>즐겨찾기한 태그</h2>
-    <div>
-        {% for favorite_tag in favorite_tags %}
-            <div>{{ favorite_tag.tag.name }}</div>
-        {% endfor %}
-    </div>-->
     <hr>
     <h2>즐겨찾기한 콘텐츠</h2>
-    <div>
-        {% for favorite_content in page_contents %}
-        <div>
-            <a href="{% url 'content' favorite_content.content.id %}">{{ favorite_content.content.title }}</a>
-            <form action="{% url 'remove_favorite' favorite_content.id%}" method="post">
-                {% csrf_token %}
-                <button type="submit">삭제</button>
-            </form>
-        </div>
-        {% endfor %}
-        {% if page_contents.has_other_pages %}
-            <div>
-                {% if page_contents.has_previous %}
-                    <a href="?page=1">&laquo; 처음</a>
-                    <a href="?page={{ page_contents.previous_page_number }}">이전</a>
-                {% endif %}
-                <span>페이지 {{ page_contents.number }} / {{ page_contents.paginator.num_pages }}</span>
-                {% if page_contents.has_next %}
-                    <a href="?page={{ page_contents.next_page_number }}">다음</a>
-                    <a href="?page={{ page_contents.paginator.num_pages }}">마지막 &raquo;</a>
-                {% endif %}
-            </div>
-        {% endif %}
+    <div id="favorite_content_items">
+        {% include 'users/favorite_content_items.html' %}
     </div>
     <hr>
     <div>
         <a href="{% url 'index' %}">홈으로</a>
-        <a href="{% url 'logout'%}">로그아웃</a>
+        <a href="{% url 'logout' %}">로그아웃</a>
     </div>
 </body>
 

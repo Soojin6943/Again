@@ -1,0 +1,18 @@
+{% for content in similar_page_contents %}
+    <div>
+        <a href="{% url 'content' content.id %}">{{ content.title }}</a>
+    </div>
+{% endfor %}
+{% if similar_page_contents.has_other_pages %}
+    <div>
+        {% if similar_page_contents.has_previous %}
+            <a href="?similar_page=1{% if search_query %}&q={{ search_query }}{% endif %}" class="page-link">&laquo; 처음</a>
+            <a href="?similar_page={{ similar_page_contents.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="page-link">이전</a>
+        {% endif %}
+        <span>페이지 {{similar_page_contents.number }} / {{ similar_page_contents.paginator.num_pages }}</span>
+        {% if similar_page_contents.has_next %}
+            <a href="?similar_page={{ similar_page_contents.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="page-link">다음</a>
+            <a href="?similar_page={{ similar_page_contents.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}" class="page-link">마지막 &raquo;</a>
+        {% endif %}
+    </div>
+{% endif %}
