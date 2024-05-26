@@ -57,10 +57,6 @@
             padding: 5px 10px;
         }
     </style>
-    <script type="text/javascript">
-        var apiKey = "{{ kakao_map_api_key }}";
-        document.write('<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=' + apiKey + '&libraries=services"><\/script>');
-    </script>
 </head>
 <body>
     <div id="map-container">
@@ -90,185 +86,197 @@
         <div id="map"></div>
     </div>
     <script>
-        // 지도와 콘텐츠 목록을 표시하는 JavaScript 코드
-        var container = document.getElementById('map');  // 지도를 표시할 div
-        var options = {
-            center: new kakao.maps.LatLng(33.450701, 126.570667),  // 지도의 중심 좌표 (위도, 경도)
-            level: 6  // 지도 확대 레벨
+        var apiKey = "{{ kakao_map_api_key }}";
+        var script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&libraries=services&autoload=false`;
+        script.async = true;
+        script.onload = function() {
+            kakao.maps.load(function() {
+                // 카카오 맵스 SDK가 로드된 후 실행될 코드
+                var container = document.getElementById('map');
+                var options = {
+                    center: new kakao.maps.LatLng(33.450701, 126.570667),
+                    level: 6
+                };
+                var map = new kakao.maps.Map(container, options);
+                var zoomControl = new kakao.maps.ZoomControl();
+                map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+                map.setMaxLevel(12);
+                var geocoder = new kakao.maps.services.Geocoder();
+                var positions = [];
+                var markers = {};  // 기관별 마커를 저장할 객체
+
+                // 데이터들 넣기
+                {% for mapL in mapList %}
+                    positions.push({
+                        id: '{{ mapL.id }}',
+                        title: '{{ mapL.title }}',
+                        address: '{{ mapL.location }}',
+                        content: '{{ mapL.content }}',
+                        organization: '{{ mapL.organization_name }}',
+                        people: '{{ mapL.type_of_people }}',
+                        home: '{{ mapL.content_link }}',
+                        url: '{% url "content" mapL.id %}',
+                    });
+                {% endfor %}
+
+                var currentPage = 1;
+                var itemsPerPage = 10;
+                var filteredPositions = positions;  // Default to all positions
+
+                function displayPage(page, positions) {
+                    var contentList = document.getElementById('content-titles');
+                    contentList.innerHTML = '';  // 기존 목록 초기화
+                    var index = (page - 1) * itemsPerPage + 1;  // 번호 초기화
+                    var start = (page - 1) * itemsPerPage;
+                    var end = start + itemsPerPage;
+                    var currentPositions = positions.slice(start, end);
+
+                    currentPositions.forEach(function (pos, i) {
+                        var li = document.createElement('li');
+                        var a = document.createElement('a');
+                        a.href = pos.url;
+                        a.textContent = (start + i + 1) + '. ' + pos.title;
+                        li.appendChild(a);
+                        contentList.appendChild(li);
+                    });
+
+                    // 페이지 버튼 상태 업데이트
+                    document.getElementById('prev-btn').disabled = page === 1;
+                    document.getElementById('next-btn').disabled = end >= positions.length;
+                }
+
+                document.getElementById('prev-btn').addEventListener('click', function() {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        displayPage(currentPage, filteredPositions);
+                    }
+                });
+
+                document.getElementById('next-btn').addEventListener('click', function() {
+                    if ((currentPage * itemsPerPage) < filteredPositions.length) {
+                        currentPage++;
+                        displayPage(currentPage, filteredPositions);
+                    }
+                });
+
+                positions.forEach(function (position) {
+                    geocoder.addressSearch(position.address, function(result, status) {
+                        if (status === kakao.maps.services.Status.OK) {
+                            var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+                            var marker = new kakao.maps.Marker({
+                                map: map,
+                                position: coords,
+                                clickable: true
+                            });
+
+                            // 기관별로 마커 저장
+                            if (!markers[position.organization]) {
+                                markers[position.organization] = [];
+                            }
+                            markers[position.organization].push(marker);
+
+                            var iwContent = '<div style="width:150px; text-align:center; padding:6px 0;">' + position.organization + '</div>',
+                                iwRemoveable = true;
+                            var infowindow = new kakao.maps.InfoWindow({
+                                content: iwContent,
+                                removable: iwRemoveable
+                            });
+
+                            kakao.maps.event.addListener(marker, 'click', function() {
+                                infowindow.open(map, marker);
+                                map.setCenter(coords);
+
+                                // 콘텐츠 목록 업데이트
+                                currentPage = 1;  // 페이지 초기화
+                                filteredPositions = positions.filter(function (pos) {
+                                    return pos.organization === position.organization;
+                                });
+                                displayPage(currentPage, filteredPositions);
+                                document.getElementById('back-to-orgs-container').style.display = 'flex';
+                                document.getElementById('list-title').textContent = position.organization + '의 콘텐츠 목록';
+                            });
+
+                            kakao.maps.event.addListener(map, 'click', function () {
+                                infowindow.close();
+                            });
+                        }
+                    });
+                });
+
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        var lat = position.coords.latitude,
+                            lon = position.coords.longitude;
+                        var locPosition = new kakao.maps.LatLng(lat, lon);
+                        map.setCenter(locPosition);
+                    });
+                } else {
+                    var locPosition = new kakao.maps.LatLng(33.450701, 126.570667);
+                    map.setCenter(locPosition);
+                }
+
+                // 초기 페이지 로드
+                document.querySelectorAll('#content-titles a').forEach(function(element) {
+                    element.addEventListener('click', function(event) {
+                        event.preventDefault();
+                        var organization = this.getAttribute('data-organization');
+                        filteredPositions = positions.filter(function (pos) {
+                            return pos.organization === organization;
+                        });
+                        currentPage = 1;  // 페이지 초기화
+                        displayPage(currentPage, filteredPositions);
+                        document.getElementById('back-to-orgs-container').style.display = 'flex';
+                        document.getElementById('list-title').textContent = organization + '의 콘텐츠 목록';
+
+                        // 해당 기관의 첫 번째 마커 위치로 이동
+                        if (markers[organization] && markers[organization].length > 0) {
+                            var firstMarker = markers[organization][0];
+                            map.setCenter(firstMarker.getPosition());
+                        }
+                    });
+                });
+
+                document.getElementById('back-to-orgs').addEventListener('click', function() {
+                    document.getElementById('list-title').textContent = '기관 목록';
+                    var contentList = document.getElementById('content-titles');
+                    contentList.innerHTML = '';  // 기존 목록 초기화
+                    {% for organization in organizations %}
+                        var li = document.createElement('li');
+                        var a = document.createElement('a');
+                        a.href = "#";
+                        a.setAttribute('data-organization', '{{ organization }}');
+                        a.textContent = '{{ organization }}';
+                        li.appendChild(a);
+                        contentList.appendChild(li);
+                    {% endfor %}
+                    document.querySelectorAll('#content-titles a').forEach(function(element) {
+                        element.addEventListener('click', function(event) {
+                            event.preventDefault();
+                            var organization = this.getAttribute('data-organization');
+                            filteredPositions = positions.filter(function (pos) {
+                                return pos.organization === organization;
+                            });
+                            currentPage = 1;  // 페이지 초기화
+                            displayPage(currentPage, filteredPositions);
+                            document.getElementById('back-to-orgs-container').style.display = 'flex';
+                            document.getElementById('list-title').textContent = organization + '의 콘텐츠 목록';
+
+                            // 해당 기관의 첫 번째 마커 위치로 이동
+                            if (markers[organization] && markers[organization].length > 0) {
+                                var firstMarker = markers[organization][0];
+                                map.setCenter(firstMarker.getPosition());
+                            }
+                        });
+                    });
+                    document.getElementById('back-to-orgs-container').style.display = 'none';
+                });
+            });
         };
 
-        // 지도 생성
-        var map = new kakao.maps.Map(container, options);  // 지도 생성
-        var zoomControl = new kakao.maps.ZoomControl();
-        map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
-        map.setMaxLevel(12);
-        var geocoder = new kakao.maps.services.Geocoder();
-        var positions = [];
-        var markers = {};  // 기관별 마커를 저장할 객체
-
-        // 데이터들 넣기
-        {% for mapL in mapList %}
-            positions.push({
-                id: '{{ mapL.id }}',
-                title: '{{ mapL.title }}',
-                address: '{{ mapL.location }}',
-                content: '{{ mapL.content }}',
-                organization: '{{ mapL.organization_name }}',
-                people: '{{ mapL.type_of_people }}',
-                home: '{{ mapL.content_link }}',
-                url: '{% url "content" mapL.id %}',
-            });
-        {% endfor %}
-
-        var currentPage = 1;
-        var itemsPerPage = 10;
-        var filteredPositions = positions;  // Default to all positions
-
-        function displayPage(page, positions) {
-            var contentList = document.getElementById('content-titles');
-            contentList.innerHTML = '';  // 기존 목록 초기화
-            var index = (page - 1) * itemsPerPage + 1;  // 번호 초기화
-            var start = (page - 1) * itemsPerPage;
-            var end = start + itemsPerPage;
-            var currentPositions = positions.slice(start, end);
-
-            currentPositions.forEach(function (pos, i) {
-                var li = document.createElement('li');
-                var a = document.createElement('a');
-                a.href = pos.url;
-                a.textContent = (start + i + 1) + '. ' + pos.title;
-                li.appendChild(a);
-                contentList.appendChild(li);
-            });
-
-            // 페이지 버튼 상태 업데이트
-            document.getElementById('prev-btn').disabled = page === 1;
-            document.getElementById('next-btn').disabled = end >= positions.length;
-        }
-
-        document.getElementById('prev-btn').addEventListener('click', function() {
-            if (currentPage > 1) {
-                currentPage--;
-                displayPage(currentPage, filteredPositions);
-            }
-        });
-
-        document.getElementById('next-btn').addEventListener('click', function() {
-            if ((currentPage * itemsPerPage) < filteredPositions.length) {
-                currentPage++;
-                displayPage(currentPage, filteredPositions);
-            }
-        });
-
-        positions.forEach(function (position) {
-            geocoder.addressSearch(position.address, function(result, status) {
-                if (status === kakao.maps.services.Status.OK) {
-                    var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
-                    var marker = new kakao.maps.Marker({
-                        map: map,
-                        position: coords,
-                        clickable: true
-                    });
-
-                    // 기관별로 마커 저장
-                    if (!markers[position.organization]) {
-                        markers[position.organization] = [];
-                    }
-                    markers[position.organization].push(marker);
-
-                    var iwContent = '<div style="width:150px; text-align:center; padding:6px 0;">' + position.organization + '</div>',
-                        iwRemoveable = true;
-                    var infowindow = new kakao.maps.InfoWindow({
-                        content: iwContent,
-                        removable: iwRemoveable
-                    });
-
-                    kakao.maps.event.addListener(marker, 'click', function() {
-                        infowindow.open(map, marker);
-                        map.setCenter(coords);
-
-                        // 콘텐츠 목록 업데이트
-                        currentPage = 1;  // 페이지 초기화
-                        filteredPositions = positions.filter(function (pos) {
-                            return pos.organization === position.organization;
-                        });
-                        displayPage(currentPage, filteredPositions);
-                    });
-
-                    kakao.maps.event.addListener(map, 'click', function () {
-                        infowindow.close();
-                    });
-                }
-            });
-        });
-
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position) {
-                var lat = position.coords.latitude,
-                    lon = position.coords.longitude;
-                var locPosition = new kakao.maps.LatLng(lat, lon);
-                map.setCenter(locPosition);
-            });
-        } else {
-            var locPosition = new kakao.maps.LatLng(33.450701, 126.570667);
-            map.setCenter(locPosition);
-        }
-
-        // 초기 페이지 로드
-        document.querySelectorAll('#content-titles a').forEach(function(element) {
-            element.addEventListener('click', function(event) {
-                event.preventDefault();
-                var organization = this.getAttribute('data-organization');
-                filteredPositions = positions.filter(function (pos) {
-                    return pos.organization === organization;
-                });
-                currentPage = 1;  // 페이지 초기화
-                displayPage(currentPage, filteredPositions);
-                document.getElementById('back-to-orgs-container').style.display = 'flex';
-                document.getElementById('list-title').textContent = organization + '의 콘텐츠 목록';
-
-                // 해당 기관의 첫 번째 마커 위치로 이동
-                if (markers[organization] && markers[organization].length > 0) {
-                    var firstMarker = markers[organization][0];
-                    map.setCenter(firstMarker.getPosition());
-                }
-            });
-        });
-
-        document.getElementById('back-to-orgs').addEventListener('click', function() {
-            document.getElementById('list-title').textContent = '기관 목록';
-            var contentList = document.getElementById('content-titles');
-            contentList.innerHTML = '';  // 기존 목록 초기화
-            {% for organization in organizations %}
-                var li = document.createElement('li');
-                var a = document.createElement('a');
-                a.href = "#";
-                a.setAttribute('data-organization', '{{ organization }}');
-                a.textContent = '{{ organization }}';
-                li.appendChild(a);
-                contentList.appendChild(li);
-            {% endfor %}
-            document.querySelectorAll('#content-titles a').forEach(function(element) {
-                element.addEventListener('click', function(event) {
-                    event.preventDefault();
-                    var organization = this.getAttribute('data-organization');
-                    filteredPositions = positions.filter(function (pos) {
-                        return pos.organization === organization;
-                    });
-                    currentPage = 1;  // 페이지 초기화
-                    displayPage(currentPage, filteredPositions);
-                    document.getElementById('back-to-orgs-container').style.display = 'flex';
-                    document.getElementById('list-title').textContent = organization + '의 콘텐츠 목록';
-
-                    // 해당 기관의 첫 번째 마커 위치로 이동
-                    if (markers[organization] && markers[organization].length > 0) {
-                        var firstMarker = markers[organization][0];
-                        map.setCenter(firstMarker.getPosition());
-                    }
-                });
-            });
-            document.getElementById('back-to-orgs-container').style.display = 'none';
-        });
+        // 스크립트 태그를 페이지에 추가
+        document.head.appendChild(script);
     </script>
 </body>
 </html>
