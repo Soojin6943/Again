@@ -12,11 +12,11 @@
     <a href="{% url 'login'%}">로그인</a>
     <hr>
     <h1>Content_list (로그인 안된 상태)</h1>
-    {% for tag in tags %}
+    {% comment %} {% for tag in tags %}
         <span>
             <a href="{% url 'tags_list' %}?tag={{ tag.name }}">#{{ tag.name }}</a>
         </span>
-    {% endfor %}
+    {% endfor %} {% endcomment %}
 
     <hr>
     <h2>조회수 상위 10 콘텐츠</h2>

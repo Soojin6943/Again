@@ -15,11 +15,11 @@
     <hr>
     <h1>Content_list (로그인된 상태)</h1>
 
-    {% for tag in tags %}
+    {% comment %} {% for tag in tags %}
         <span>
             <a href="{% url 'tags_list' %}?tag={{ tag.name }}">#{{ tag.name }}</a>
         </span>
-    {% endfor %}
+    {% endfor %} {% endcomment %}
 
     <hr>
 
