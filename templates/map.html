@@ -23,6 +23,9 @@
             font-size: 1.5em;
             margin-bottom: 10px;
         }
+        #search-container {
+            margin-bottom: 10px;
+        }
         #content-titles {
             list-style: none;
             padding: 0;
@@ -70,6 +73,9 @@
                 <a href="{% url 'login' %}">로그인</a>
             {% endif %}
             <h2 id="list-title">기관 목록</h2>
+            <div id="search-container">
+                <input type="text" id="search-input" placeholder="기관 검색">
+            </div>
             <ul id="content-titles">
                 <!-- 기관 목록을 JavaScript에서 동적으로 생성합니다. -->
             </ul>
@@ -124,17 +130,17 @@
                     });
                 {% endfor %}
 
-                // positions 배열을 title을 기준으로 오름차순으로 정렬
-                positions.sort((a, b) => a.title.localeCompare(b.title));
+                // positions 배열을 title을 기준으로 내림차순으로 정렬
+                positions.sort((a, b) => b.title.localeCompare(a.title));
 
                 var currentPage = 1;
                 var itemsPerPage = 10;
                 var filteredPositions = positions;  // Default to all positions
 
-                function displayOrganizations() {
+                function displayOrganizations(orgs) {
                     var contentList = document.getElementById('content-titles');
                     contentList.innerHTML = '';  // 기존 목록 초기화
-                    organizations.forEach(function(organization) {
+                    orgs.forEach(function(organization) {
                         var li = document.createElement('li');
                         var a = document.createElement('a');
                         a.href = "#";
@@ -153,12 +159,13 @@
                                 return pos.organization === organization;
                             });
 
-                            // filteredPositions 배열을 title을 기준으로 오름차순으로 정렬
-                            filteredPositions.sort((a, b) => a.title.localeCompare(b.title));
+                            // filteredPositions 배열을 title을 기준으로 내림차순으로 정렬
+                            filteredPositions.sort((a, b) => b.title.localeCompare(a.title));
 
                             currentPage = 1;  // 페이지 초기화
                             displayPage(currentPage, filteredPositions);
                             document.getElementById('back-to-orgs-container').style.display = 'flex';
+                            document.getElementById('search-container').style.display = 'none'; // 검색창 숨기기
                             document.getElementById('list-title').textContent = organization + '의 콘텐츠 목록';
 
                             // 해당 기관의 첫 번째 마커 위치로 이동
@@ -239,11 +246,12 @@
                                     return pos.organization === position.organization;
                                 });
 
-                                // filteredPositions 배열을 title을 기준으로 오름차순으로 정렬
-                                filteredPositions.sort((a, b) => a.title.localeCompare(b.title));
+                                // filteredPositions 배열을 title을 기준으로 내림차순으로 정렬
+                                filteredPositions.sort((a, b) => b.title.localeCompare(a.title));
 
                                 displayPage(currentPage, filteredPositions);
                                 document.getElementById('back-to-orgs-container').style.display = 'flex';
+                                document.getElementById('search-container').style.display = 'none'; // 검색창 숨기기
                                 document.getElementById('list-title').textContent = position.organization + '의 콘텐츠 목록';
                             });
 
@@ -267,12 +275,21 @@
                 }
 
                 // 초기 페이지 로드
-                displayOrganizations();
+                displayOrganizations(organizations);
 
                 document.getElementById('back-to-orgs').addEventListener('click', function() {
                     document.getElementById('list-title').textContent = '기관 목록';
-                    displayOrganizations();
+                    displayOrganizations(organizations);
                     document.getElementById('back-to-orgs-container').style.display = 'none';
+                    document.getElementById('search-container').style.display = 'block'; // 검색창 보이기
+                });
+
+                document.getElementById('search-input').addEventListener('input', function() {
+                    var searchTerm = this.value.toLowerCase();
+                    var filteredOrgs = organizations.filter(function(organization) {
+                        return organization.toLowerCase().includes(searchTerm);
+                    });
+                    displayOrganizations(filteredOrgs);
                 });
             });
         };
