@@ -11,7 +11,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
-
+import json
+import os
 import map.apps
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -21,11 +22,21 @@ TEMPLATES_DIR = BASE_DIR / "templates"
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
+# secret.json 파일 경로
+secret_file_path = os.path.join(BASE_DIR, "secret.json")
+
+# secret.json 파일 읽기
+with open(secret_file_path) as secret_file:
+    secrets = json.load(secret_file)
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-1z2pfmpe@a0587f4f)p%piyziba2xgl$54w*ato!ijc-&wrjht"
+SECRET_KEY = secrets["SECRET_KEY"]
 
+# API 키 가져오기
+KAKAO_MAP_API_KEY = secrets["KAKAO_MAP_API_KEY"]
 # SECURITY WARNING: don't run with debug turned on in production!
+
+
 DEBUG = True
 
 ALLOWED_HOSTS = []
