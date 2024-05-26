@@ -5,6 +5,8 @@
     <title>Again_Content</title>
 </head>
 <body>
+    <a href="{% url 'index' %}">홈으로</a>
+    <hr>
     <h1>{{ content.title }}</h1>
     <p>내용: {{ content.content }}</p>
     <p>교육 기관: {{ content.organization_name }}</p>
@@ -34,8 +36,8 @@
     </form>
     {% endif %}
 
-    <a href="{% url 'index' %}">홈으로</a>
-    <a href="{% url 'content_list'%}">목록으로</a>
+    <a href="#" onclick="history.back(); return false;">뒤로 가기</a>
+    <a href="{% url 'content_list'%}">콘텐츠 목록으로</a>
     {% if request.user.is_authenticated %}
         <a href="{% url 'my_page'%}">마이페이지</a>
     {% endif %}

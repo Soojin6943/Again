@@ -17,7 +17,7 @@ def login_view(request):
             user = authenticate(username=username, password=password)
             if user:
                 login(request, user)
-                return redirect("/contents/content_list")
+                return redirect("/")
             else:
                 form.add_error(None, "입력한 사용자가 존재하지 않습니다.")
 
@@ -40,7 +40,7 @@ def signup(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect("/contents/content_list/")
+            return redirect("/")
     else:
         form = SignupForm()
 
