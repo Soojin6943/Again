@@ -8,6 +8,11 @@
 </head>
 
 <body>
+    <a href="{% url 'index' %}">홈으로</a>
+    <span>{{ user.username }}(ID: {{ user.id }})</span>
+    <a href="{% url 'my_page'%}">마이페이지</a>
+    <a href="{% url 'logout'%}">로그아웃</a>
+    <hr>
     <h1>Content_list (로그인된 상태)</h1>
 
     {% for tag in tags %}
@@ -89,10 +94,6 @@
     
     <hr>
 
-    <div>{{ user.username }}(ID: {{ user.id }})</div>
-    <a href="{% url 'index' %}">홈으로</a>
-    <a href="{% url 'my_page'%}">마이페이지</a>
-    <a href="{% url 'logout'%}">로그아웃</a>
 </body>
 
 </html>

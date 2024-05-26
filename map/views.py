@@ -7,8 +7,10 @@ import csv
 # Create your views here.
 def map(request):
     mapList = Content.objects.all()
+    organizations = mapList.values_list("organization_name", flat=True).distinct()
     context = {
         "mapList": mapList,
+        "organizations": organizations,
         "kakao_map_api_key": settings.KAKAO_MAP_API_KEY,
     }
     return render(request, "map.html", context)
