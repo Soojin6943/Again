@@ -1,4 +1,4 @@
-## 🦉Focus On Me (with GCP)
+## 🦉Again(with KAKAO maps)
 - 정규 교육 외 교육 콘텐츠 제공 플랫폼
 <br>
 
